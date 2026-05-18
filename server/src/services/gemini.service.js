@@ -11,7 +11,11 @@ export const translateCode = async (code, sourceLang, targetLang) => {
     },
   });
 
-  return response.text.trim();
+  const text = response.text || "";
+  if (!text.trim()) {
+    throw new Error("Gemini returned an empty response. This might be due to temporary server load or safety filters.");
+  }
+  return text.trim();
 };
 
 export const analyzeCodeComplexity = async (code, lang) => {
@@ -25,7 +29,11 @@ export const analyzeCodeComplexity = async (code, lang) => {
     },
   });
 
-  return response.text.trim();
+  const text = response.text || "";
+  if (!text.trim()) {
+    throw new Error("Gemini returned an empty response. This might be due to temporary server load or safety filters.");
+  }
+  return text.trim();
 };
 
 export const optimizeCode = async (code, lang) => {
@@ -39,7 +47,11 @@ export const optimizeCode = async (code, lang) => {
     },
   });
 
-  return response.text.trim();
+  const text = response.text || "";
+  if (!text.trim()) {
+    throw new Error("Gemini returned an empty response. This might be due to temporary server load or safety filters.");
+  }
+  return text.trim();
 };
 
 export const explainCode = async (code, lang) => {
@@ -53,5 +65,9 @@ export const explainCode = async (code, lang) => {
     },
   });
 
-  return response.text.trim();
+  const text = response.text || "";
+  if (!text.trim()) {
+    throw new Error("Gemini returned an empty response. This might be due to temporary server load or safety filters.");
+  }
+  return text.trim();
 };

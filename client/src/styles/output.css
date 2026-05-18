@@ -1,0 +1,102 @@
+/* ===== Output Layout Containers ===== */
+.output-full-height {
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+.output-scroll-container {
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+/* ===== Output Markdown Styling (Monochrome Theme) ===== */
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #71717a; /* Zinc 500 */
+  font-size: 0.95rem;
+}
+
+.empty-state span {
+  color: #ffffff;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  margin: 0 0.3rem;
+  border: 1px solid #27272a;
+}
+
+.markdown-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  font-family: 'Inter', sans-serif;
+  padding-bottom: 2rem;
+}
+
+.markdown-h1 {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #ffffff; /* Monochrome White */
+  margin-top: 1.5rem;
+  margin-bottom: 0.6rem;
+  border-bottom: 1px solid #27272a; /* Zinc 800 */
+  padding-bottom: 0.4rem;
+}
+
+.markdown-h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-top: 1.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #e4e4e7; /* Zinc 200 */
+  margin-top: 1.1rem;
+  margin-bottom: 0.4rem;
+}
+
+.markdown-p {
+  color: #cbd5e1; /* Zinc 300 */
+  font-size: 0.95rem;
+  line-height: 1.65;
+  margin-bottom: 0.8rem;
+}
+
+.markdown-li {
+  color: #cbd5e1;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  margin-left: 1.5rem;
+  margin-bottom: 0.5rem;
+  list-style-type: square; /* Clean square list items */
+}
+
+.markdown-strong {
+  color: #ffffff; /* Clear White contrast */
+  font-weight: 700;
+}
+
+.markdown-spacing {
+  height: 0.6rem;
+}
+
+.output-editor-area {
+  height: 320px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #27272a; /* Zinc 800 */
+  margin: 1.2rem 0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}

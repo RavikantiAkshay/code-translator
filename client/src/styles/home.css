@@ -1,0 +1,208 @@
+/* ===== HomePage Workspace (Monochrome Design) ===== */
+.home-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 60px); /* Adjust to 60px navbar */
+  background: #09090b; /* Pure Dark Zinc 950 */
+  color: #f4f4f5;
+  font-family: 'Inter', sans-serif;
+}
+
+.home-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  background: #18181b; /* Zinc 900 */
+  border-bottom: 1px solid #27272a; /* Zinc 800 */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  z-index: 10;
+}
+
+.toolbar-selectors {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.selector-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.selector-group label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #71717a; /* Zinc 400 */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Action selection pills */
+.action-pills {
+  display: flex;
+  background: #09090b; /* Zinc 950 */
+  padding: 0.25rem;
+  border-radius: 9999px;
+  border: 1px solid #27272a; /* Zinc 800 */
+}
+
+.action-pill {
+  padding: 0.5rem 1.2rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #a1a1aa; /* Zinc 400 */
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.action-pill:hover {
+  color: #ffffff;
+}
+
+.action-pill.active {
+  background: #ffffff; /* Premium White active pill */
+  color: #09090b; /* Black text */
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+  font-weight: 700;
+}
+
+/* Run Button with monochrome style */
+.run-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #ffffff; /* White background */
+  color: #09090b; /* Black text */
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.12);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.run-btn:hover:not(:disabled) {
+  background: #e4e4e7; /* Light Gray */
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.18);
+}
+
+.run-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.run-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Split Pane Workspace */
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.pane {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.pane-left {
+  border-right: 1px solid #27272a;
+  background: #18181b;
+}
+
+.pane-right {
+  background: #09090b;
+}
+
+.pane-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 1.2rem;
+  background: #18181b;
+  border-bottom: 1px solid #27272a;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #71717a;
+}
+
+.pane-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Glassmorphic spinner in Workspace overlay */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(9, 9, 11, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  z-index: 20;
+}
+
+.loading-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e4e4e7;
+  letter-spacing: 0.02em;
+}
+
+.loading-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+/* Override components.css dropdown */
+.dark-lang-select {
+  height: 36px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: #09090b;
+  border: 1px solid #27272a;
+  border-radius: 8px;
+  padding: 0 2rem 0 0.75rem;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  transition: all 0.2s ease;
+}
+
+.dark-lang-select:focus {
+  border-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08);
+}
