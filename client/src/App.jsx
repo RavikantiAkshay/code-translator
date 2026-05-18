@@ -6,7 +6,7 @@ import HistoryPage from './pages/HistoryPage.jsx'
 import Navbar from './components/Navbar.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 
-import 'styles/components.css'
+import './styles/components.css'
 
 function App() {
 

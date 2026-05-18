@@ -1,35 +1,16 @@
-import { useState } from "react";
-import toast from "react-hot-toast";
-import CodeEditor from "../components/CodeEditor.jsx";
-import OutputPanel from "../components/OutputPanel.jsx";
-import LanguageSelector from "../components/LanguageSelector.jsx";
-import {STARTER_CODE} from "../constants/language.js";
-import {
-    translatedCode,
-    analyzeComplexity,
-    otimizeCode,
-    explainCode
-} from "..services/service.js";
-
-import "styles/home.css";
-
-const ACTIONS = ['translate', 'analyze', 'otimize', 'explain'];
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext.jsx";
 
 function HomePage() {
-    const [code, setCode] = useState(STARTER_CODE['python']);
-    const [sourcelanguage, setSourceLanguage] = useState('python');
-    const [targetlanguage, setTargetLanguage] = useState('javascript');
-    const [activeAction, setActiveAction] = useState('translate');
-    const [result, setResult] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [copied, setCopied] = useState(false);
+  const { user } = useContext(AuthContext);
 
-    const handleSourceChange = (langID) => {
-        setSourceLanguage(langID);
-        if (STARTER_CODE[langID]) {
-            setCode(STARTER_CODE[langID]);
-        }
-        setResult(null);
-    }
-
+  return (
+    <div style={{ padding: "2rem", color: "#fff" }}>
+      <h1>Welcome to Code Translator!</h1>
+      <p>Hello, {user?.name} (email: {user?.email})</p>
+      <p>This is a temporary placeholder for the HomePage workspace.</p>
+    </div>
+  );
 }
+
+export default HomePage;
