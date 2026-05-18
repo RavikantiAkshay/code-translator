@@ -1,10 +1,12 @@
 import { Router } from "express";
 import authRoutes from "./auth.routes.js";
-import translationRoutes from "./translation.routes.js";
+import codeRoutes from "./code.routes.js";
+import historyRoutes from "./history.routes.js";
 
 const router = Router();
 
 router.use("/auth", authRoutes);
-router.use("/translate", translationRoutes); // → /api/translate/...
+router.use("/code", codeRoutes); // → /api/code/...
+router.use("/history", historyRoutes); // → /api/history/...
 
 export default router;

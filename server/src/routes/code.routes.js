@@ -4,12 +4,11 @@ import {
   handleComplexityAnalysis,
   handleOptimization,
   handleExplanation,
-} from "../controllers/translation.controller.js";
+} from "../controllers/code.controller.js";
 import authenticate from "../middleware/auth.middleware.js";
 
 const router = Router();
 
-// Protect all AI routes so only logged-in users can use them
 router.use(authenticate);
 
 router.post("/translate", handleTranslation);
