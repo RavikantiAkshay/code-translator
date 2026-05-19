@@ -80,9 +80,10 @@ function HomePage() {
       if (
         rawMsg.includes("503") ||
         rawMsg.toLowerCase().includes("high demand") ||
-        rawMsg.toLowerCase().includes("unavailable")
+        rawMsg.toLowerCase().includes("unavailable") ||
+        rawMsg.toLowerCase().includes("rate limit")
       ) {
-        toast.error("Gemini servers are currently experiencing extremely high demand. Please wait 3 seconds and click 'Run Action' again!", {
+        toast.error("AI engines are currently experiencing high demand. Please wait a second and click 'Run Action' again!", {
           duration: 6000,
         });
       } else {
@@ -166,7 +167,7 @@ function HomePage() {
         {loading && (
           <div className="loading-overlay">
             <div className="spinner" style={{ width: "40px", height: "40px", borderTopColor: "#ffffff", borderWidth: "3px" }}></div>
-            <p className="loading-text">Gemini is writing some magic...</p>
+            <p className="loading-text">AI is writing some magic...</p>
           </div>
         )}
 

@@ -1,6 +1,6 @@
 # 🌌 AI-Powered Smart Code Translator & Assistant
 
-An elite, full-stack MERN utility designed for developers. It leverages the latest **Google Gemini 2.5 LLM** engine (`@google/genai`) to translate, optimize, analyze, and explain code within a premium, high-performance monochrome workspace.
+An elite, full-stack MERN utility designed for developers. It leverages the high-performance **Groq Llama-3.3-70b-versatile** engine (`groq-sdk`) to translate, optimize, analyze, and explain code within a premium, high-performance monochrome workspace.
 
 Developed with React 19, Node.js, Express, and MongoDB, this application integrates full token-based JWT security, Google OAuth Single Sign-On (SSO), pixel-perfect Monaco Editors, and robust historical log tracking.
 
@@ -34,7 +34,7 @@ Developed with React 19, Node.js, Express, and MongoDB, this application integra
 - **Runtime:** Node.js (ES Modules syntax)
 - **Framework:** Express.js v5
 - **Database:** MongoDB via Mongoose ODM
-- **GenAI Client:** Official Google Gen AI SDK (`@google/genai` model `gemini-2.5-flash`)
+- **GenAI Client:** Official Groq SDK (`groq-sdk` model `llama-3.3-70b-versatile`)
 - **Security:** `jsonwebtoken` (JWT signatures), `bcryptjs`, `google-auth-library` (Google SSO validations)
 
 ---
@@ -73,7 +73,7 @@ PORT=5000
 MONGO_URI=your_mongodb_atlas_connection_string
 JWT_SECRET=your_jwt_signature_key_phrase
 GOOGLE_CLIENT_ID=your_google_oauth_client_id.apps.googleusercontent.com
-GEMINI_API_KEY=your_google_ai_studio_gemini_api_key
+GROQ_API_KEY=your_groq_api_key_here
 ```
 
 ### 2. Client Configuration
