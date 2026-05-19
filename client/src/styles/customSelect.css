@@ -1,0 +1,124 @@
+/* ===== Premium Custom Dropdown Lists (Monochrome Aesthetics) ===== */
+.custom-select-container {
+  position: relative;
+  min-width: 150px;
+}
+
+.custom-select-trigger {
+  width: 100%;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.1rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.custom-select-trigger:hover {
+  border-color: var(--text-muted);
+  background: var(--bg-primary);
+}
+
+.custom-select-trigger.open {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 2px var(--border-hover);
+}
+
+.select-arrow-icon {
+  color: var(--text-muted);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.custom-select-trigger.open .select-arrow-icon {
+  transform: rotate(180deg);
+  color: var(--text-primary);
+}
+
+/* Glassmorphic Dropdown List Overlay */
+.custom-select-options {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 6px;
+  margin: 0;
+  list-style: none;
+  z-index: 99;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  max-height: 260px;
+  overflow-y: auto;
+  animation: dropdownFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.custom-select-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.custom-select-option:hover {
+  color: var(--text-primary);
+  background: var(--bg-primary);
+}
+
+.custom-select-option.selected {
+  color: var(--accent-text);
+  background: var(--accent-color);
+  font-weight: 700;
+}
+
+.select-check-icon {
+  color: inherit;
+}
+
+/* Slim custom scrollbar inside select options lists */
+.custom-select-options::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-select-options::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-select-options::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 2px;
+}
+
+.custom-select-options::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}

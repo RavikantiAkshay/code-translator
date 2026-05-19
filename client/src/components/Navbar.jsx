@@ -87,7 +87,15 @@ function Navbar() {
           )}
         </button>
 
-        {user?.picture && <img src={user.picture} alt="" className="navbar-avatar" />}
+        {/* Fixed: Adding referrerPolicy="no-referrer" so Google images fetch successfully */}
+        {user?.picture && (
+          <img
+            src={user.picture}
+            alt=""
+            className="navbar-avatar"
+            referrerPolicy="no-referrer"
+          />
+        )}
         <span className="navbar-username">{user?.name}</span>
         <button className="navbar-logout" onClick={handleLogout}>
           Logout

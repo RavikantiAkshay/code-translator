@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import CodeEditor from "../components/CodeEditor.jsx";
 import OutputPanel from "../components/OutputPanel.jsx";
+import CustomSelect from "../components/CustomSelect.jsx";
 import { LANGUAGES, STARTER_CODE } from "../constants/language.js";
 import {
   translateCode,
@@ -38,6 +39,9 @@ function HomePage() {
   const [activeAction, setActiveAction] = useState("translate");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // File Picker ref
+  const fileInputRef = useRef(null);
 
   // Enhancement States: Split resizer, visual diff, drag & drop
   const [leftWidth, setLeftWidth] = useState(null);
@@ -174,31 +178,40 @@ function HomePage() {
     }
   };
 
+  const processUploadedFile = async (file) => {
+    const extension = file.name.split(".").pop()?.toLowerCase();
+    try {
+      const fileContent = await file.text();
+      setCode(fileContent);
+
+      // Auto detect and switch input language selection
+      if (extension && extensionMap[extension]) {
+        setSourceLanguage(extensionMap[extension]);
+        toast.success(`Loaded ${file.name} (detected: ${LANGUAGES.find(l => l.id === extensionMap[extension])?.name || extension})`);
+      } else {
+        toast.success(`Loaded ${file.name}`);
+      }
+      setResult(null);
+      setShowDiff(false);
+    } catch (err) {
+      toast.error("Failed to read script file.");
+    }
+  };
+
   const handleDrop = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      const extension = file.name.split(".").pop()?.toLowerCase();
+      await processUploadedFile(e.dataTransfer.files[0]);
+    }
+  };
 
-      try {
-        const fileContent = await file.text();
-        setCode(fileContent);
-
-        // Auto detect and switch input language selection
-        if (extension && extensionMap[extension]) {
-          setSourceLanguage(extensionMap[extension]);
-          toast.success(`Loaded ${file.name} (detected: ${LANGUAGES.find(l => l.id === extensionMap[extension])?.name || extension})`);
-        } else {
-          toast.success(`Loaded ${file.name}`);
-        }
-        setResult(null);
-        setShowDiff(false);
-      } catch (err) {
-        toast.error("Failed to read script file.");
-      }
+  const handleFilePickerChange = async (e) => {
+    if (e.target.files && e.target.files[0]) {
+      await processUploadedFile(e.target.files[0]);
+      e.target.value = ""; // Reset file picker selection
     }
   };
 
@@ -250,17 +263,11 @@ function HomePage() {
         <div className="toolbar-selectors">
           <div className="selector-group">
             <label>Source Language</label>
-            <select
+            <CustomSelect
               value={sourceLanguage}
               onChange={handleSourceChange}
-              className="dark-lang-select"
-            >
-              {LANGUAGES.map((lang) => (
-                <option key={lang.id} value={lang.id}>
-                  {lang.name}
-                </option>
-              ))}
-            </select>
+              options={LANGUAGES}
+            />
           </div>
 
           <div className="action-pills">
@@ -278,17 +285,11 @@ function HomePage() {
           {activeAction === "translate" && (
             <div className="selector-group">
               <label>Target Language</label>
-              <select
+              <CustomSelect
                 value={targetLanguage}
                 onChange={handleTargetChange}
-                className="dark-lang-select"
-              >
-                {LANGUAGES.map((lang) => (
-                  <option key={lang.id} value={lang.id}>
-                    {lang.name}
-                  </option>
-                ))}
-              </select>
+                options={LANGUAGES}
+              />
             </div>
           )}
         </div>
@@ -324,6 +325,23 @@ function HomePage() {
         >
           <div className="pane-header">
             <span>Input Code</span>
+            <div className="pane-header-actions">
+              {/* Clickable Local File Upload Action */}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="header-action-btn"
+                title="Select and load local script code file"
+              >
+                Upload File
+              </button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFilePickerChange}
+                style={{ display: "none" }}
+                accept=".py,.js,.ts,.java,.c,.cpp,.cc,.cs,.txt"
+              />
+            </div>
           </div>
           <div className="pane-content">
             <CodeEditor 

@@ -78,7 +78,7 @@ export const googleLogin = async (credential) => {
       picture: googleUser.picture,
       lastLogin: new Date(),
     },
-    { new: true, upsert: true, runValidators: true }
+    { returnDocument: "after", upsert: true, runValidators: true }
   );
 
   const token = generateToken(user);
