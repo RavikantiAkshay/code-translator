@@ -1,5 +1,35 @@
-/* ===== Global Reset & Base ===== */
+/* ===== Global Variables & Themes ===== */
+:root {
+  --bg-primary: #09090b;       /* Zinc 950 (Black) */
+  --bg-secondary: #18181b;     /* Zinc 900 */
+  --border-color: #27272a;     /* Zinc 800 */
+  --border-hover: #3f3f46;     /* Zinc 700 */
+  --text-primary: #ffffff;     /* White */
+  --text-secondary: #a1a1aa;   /* Zinc 400 */
+  --text-muted: #71717a;       /* Zinc 500 */
+  --accent-color: #ffffff;     /* White active */
+  --accent-text: #09090b;      /* Black active */
+  --card-bg: #18181b;
+  --pane-left-bg: #18181b;
+  --pane-right-bg: #09090b;
+}
 
+[data-theme="light"] {
+  --bg-primary: #ffffff;       /* Pure White */
+  --bg-secondary: #f4f4f5;     /* Zinc 100 */
+  --border-color: #e4e4e7;     /* Zinc 200 */
+  --border-hover: #d4d4d8;     /* Zinc 300 */
+  --text-primary: #09090b;     /* Black */
+  --text-secondary: #52525b;   /* Zinc 600 */
+  --text-muted: #71717a;       /* Zinc 500 */
+  --accent-color: #09090b;     /* Black active */
+  --accent-text: #ffffff;      /* White active */
+  --card-bg: #f4f4f5;
+  --pane-left-bg: #f4f4f5;
+  --pane-right-bg: #ffffff;
+}
+
+/* ===== Global Reset & Base ===== */
 * {
   margin: 0;
   padding: 0;
@@ -13,9 +43,10 @@ html, body, #root {
 
 body {
   font-family: 'Inter', sans-serif;
-  background: #ffffff;
-  color: #111111;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 a {
@@ -33,11 +64,19 @@ select {
 }
 
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #ccc;
+  background: var(--border-color);
   border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
 }

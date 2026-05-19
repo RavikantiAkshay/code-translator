@@ -1,14 +1,18 @@
+import { useContext } from "react";
 import Editor from "@monaco-editor/react";
+import { ThemeContext } from "../context/ThemeContext.jsx";
 import { MONACO_LANGUAGES } from "../constants/language.js";
 
 function CodeEditor({ code, onChange, language, readOnly = false }) {
+  const { theme } = useContext(ThemeContext);
+
   return (
     <Editor
       height="100%"
       language={MONACO_LANGUAGES[language] || "javascript"}
       value={code}
       onChange={(v) => onChange && onChange(v || "")}
-      theme="vs-dark"
+      theme={theme === "dark" ? "vs-dark" : "vs"}
       options={{
         fontSize: 14,
         fontFamily: "Consolas, 'Courier New', monospace",

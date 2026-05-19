@@ -15,6 +15,15 @@ export const getUserHistory = async (userId) => {
   return await History.find({ userId }).sort({ createdAt: -1 });
 };
 
+// Enhancement: Database paginated query for transaction log scaling
+export const getUserHistoryPaginated = async (userId, skip, limit) => {
+  const [history, total] = await Promise.all([
+    History.find({ userId }).sort({ createdAt: -1 }).skip(skip).limit(limit),
+    History.countDocuments({ userId }),
+  ]);
+  return { history, total };
+};
+
 export const deleteHistoryById = async (userId, historyId) => {
   const record = await History.findOneAndDelete({ _id: historyId, userId });
   if (!record) {

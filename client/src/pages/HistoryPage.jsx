@@ -10,22 +10,45 @@ import "../styles/history.css";
 function HistoryPage() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
 
-  const fetchHistory = async () => {
+  // Pagination states
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const fetchHistory = async (pageNumber = 1, append = false) => {
     try {
-      const data = await getHistory();
-      setHistory(data);
+      if (pageNumber > 1) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
+
+      // Load 8 log entries per page
+      const response = await getHistory(pageNumber, 8);
+
+      if (append) {
+        setHistory((prev) => [...prev, ...response.data]);
+      } else {
+        setHistory(response.data);
+      }
+
+      if (response.pagination) {
+        setPage(response.pagination.page);
+        setTotalPages(response.pagination.pages);
+      }
     } catch (error) {
       console.error(error);
       toast.error("Failed to load history.");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
   useEffect(() => {
-    fetchHistory();
+    fetchHistory(1, false);
   }, []);
 
   const handleDelete = async (e, id) => {
@@ -81,11 +104,11 @@ function HistoryPage() {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  if (loading) {
+  if (loading && page === 1) {
     return (
       <div className="history-container">
         <div className="loading-state">
-          <div className="spinner" style={{ width: "36px", height: "36px", borderTopColor: "#38bdf8" }}></div>
+          <div className="spinner" style={{ width: "36px", height: "36px", borderTopColor: "var(--text-primary)" }}></div>
         </div>
       </div>
     );
@@ -118,7 +141,7 @@ function HistoryPage() {
                 {/* Summary Header of Card */}
                 <div className="card-summary" onClick={() => toggleExpand(item._id)}>
                   <div className="card-meta">
-                    <span className={`action-badge badge-${item.action}`}>
+                    <span className="action-badge">
                       {formatAction(item.action)}
                     </span>
                     <span className="lang-flow">
@@ -191,6 +214,19 @@ function HistoryPage() {
               </article>
             );
           })}
+
+          {/* Load More Pagination Trigger */}
+          {page < totalPages && (
+            <div className="load-more-container">
+              <button
+                onClick={() => fetchHistory(page + 1, true)}
+                disabled={loadingMore}
+                className="load-more-btn"
+              >
+                {loadingMore ? "Loading..." : "Load More Logs"}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -1,11 +1,61 @@
+import { useContext } from "react";
+import { DiffEditor } from "@monaco-editor/react";
 import CodeEditor from "./CodeEditor.jsx";
+import { ThemeContext } from "../context/ThemeContext.jsx";
 import "../styles/output.css";
 
-function OutputPanel({ result, action, targetLanguage }) {
+function OutputPanel({ 
+  result, 
+  action, 
+  targetLanguage, 
+  showDiff = false, 
+  originalCode = "", 
+  sourceLanguage = "" 
+}) {
+  const { theme } = useContext(ThemeContext);
+
   if (!result) {
     return (
       <div className="empty-state">
         <p>Write Code, pick an action, and hit <span>Run</span></p>
+      </div>
+    );
+  }
+
+  // Visual Diff View mode override
+  if (showDiff) {
+    // Extracted code result for non-translate actions (explain/optimize might have markdown)
+    // If it has markdown, we extract the first code block, or fall back to the whole text
+    let displayResult = result;
+    if (action !== "translate") {
+      const codeBlockRegex = /```\w*\n([\s\S]*?)```/;
+      const match = result.match(codeBlockRegex);
+      if (match && match[1]) {
+        displayResult = match[1].trim();
+      }
+    }
+
+    return (
+      <div className="output-full-height">
+        <DiffEditor
+          original={originalCode || ""}
+          modified={displayResult || ""}
+          language={action === "translate" ? targetLanguage : sourceLanguage}
+          theme={theme === "dark" ? "vs-dark" : "vs"}
+          options={{
+            readOnly: true,
+            minimap: { enabled: false },
+            fontFamily: "Consolas, 'Courier New', monospace",
+            fontSize: 14,
+            automaticLayout: true,
+            originalEditable: false,
+          }}
+          loading={
+            <div className="loading-state">
+              <p>Loading Diff Viewer...</p>
+            </div>
+          }
+        />
       </div>
     );
   }

@@ -3,9 +3,10 @@
   display: flex;
   flex-direction: column;
   height: calc(100vh - 60px); /* Adjust to 60px navbar */
-  background: #09090b; /* Pure Dark Zinc 950 */
-  color: #f4f4f5;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   font-family: 'Inter', sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .home-toolbar {
@@ -13,9 +14,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1.5rem;
-  background: #18181b; /* Zinc 900 */
-  border-bottom: 1px solid #27272a; /* Zinc 800 */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   z-index: 10;
 }
 
@@ -34,7 +35,7 @@
 .selector-group label {
   font-size: 0.75rem;
   font-weight: 700;
-  color: #71717a; /* Zinc 400 */
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -42,10 +43,10 @@
 /* Action selection pills */
 .action-pills {
   display: flex;
-  background: #09090b; /* Zinc 950 */
+  background: var(--bg-primary);
   padding: 0.25rem;
   border-radius: 9999px;
-  border: 1px solid #27272a; /* Zinc 800 */
+  border: 1px solid var(--border-color);
 }
 
 .action-pill {
@@ -53,7 +54,7 @@
   border-radius: 9999px;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #a1a1aa; /* Zinc 400 */
+  color: var(--text-secondary);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -61,13 +62,13 @@
 }
 
 .action-pill:hover {
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .action-pill.active {
-  background: #ffffff; /* Premium White active pill */
-  color: #09090b; /* Black text */
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+  background: var(--accent-color);
+  color: var(--accent-text);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.05);
   font-weight: 700;
 }
 
@@ -82,19 +83,19 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  background: #ffffff; /* White background */
-  color: #09090b; /* Black text */
+  background: var(--accent-color);
+  color: var(--accent-text);
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.05);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .run-btn:hover:not(:disabled) {
-  background: #e4e4e7; /* Light Gray */
+  opacity: 0.9;
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.18);
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.08);
 }
 
 .run-btn:active:not(:disabled) {
@@ -109,11 +110,11 @@
 
 /* Split Pane Workspace */
 .workspace-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex; /* Swapped to flex for resizable columns support */
   flex: 1;
   overflow: hidden;
   position: relative;
+  width: 100%;
 }
 
 .pane {
@@ -121,15 +122,32 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+  position: relative;
 }
 
 .pane-left {
-  border-right: 1px solid #27272a;
-  background: #18181b;
+  background: var(--pane-left-bg);
 }
 
 .pane-right {
-  background: #09090b;
+  background: var(--pane-right-bg);
+}
+
+/* Draggable Resize Divider */
+.resize-divider {
+  width: 6px;
+  height: 100%;
+  background: var(--border-color);
+  cursor: col-resize;
+  position: relative;
+  z-index: 15;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.resize-divider:hover,
+.resize-divider.dragging {
+  background: var(--text-muted);
 }
 
 .pane-header {
@@ -137,13 +155,20 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.6rem 1.2rem;
-  background: #18181b;
-  border-bottom: 1px solid #27272a;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #71717a;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.pane-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .pane-content {
@@ -159,7 +184,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(9, 9, 11, 0.8);
+  background: rgba(9, 9, 11, 0.85);
   backdrop-filter: blur(4px);
   display: flex;
   flex-direction: column;
@@ -172,7 +197,7 @@
 .loading-text {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #e4e4e7;
+  color: var(--text-primary);
   letter-spacing: 0.02em;
 }
 
@@ -183,26 +208,93 @@
   height: 100%;
 }
 
-/* Override components.css dropdown */
+/* Header Toggle Button Styles */
+.header-action-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.header-action-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+.header-action-btn.active {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border-color: var(--text-primary);
+}
+
+/* Drag & Drop File Upload Styles */
+.file-drag-zone {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(9, 9, 11, 0.9);
+  border: 2px dashed var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.file-drag-zone.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.file-drag-zone svg {
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+}
+
+.file-drag-zone p {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Dropdown override */
 .dark-lang-select {
   height: 36px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #ffffff;
-  background: #09090b;
-  border: 1px solid #27272a;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 0 2rem 0 0.75rem;
   outline: none;
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   transition: all 0.2s ease;
 }
 
+[data-theme="dark"] .dark-lang-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+}
+
+[data-theme="light"] .dark-lang-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+}
+
 .dark-lang-select:focus {
-  border-color: #ffffff;
+  border-color: var(--text-primary);
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08);
 }
