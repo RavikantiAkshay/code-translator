@@ -22,6 +22,7 @@ Developed with React 19, Node.js, Express, and MongoDB, this application integra
 - **🔒 Session & Identity Control:** Standard email/password registrations secured with standard bcrypt hashes, side-by-side with verified Google OAuth SSO endpoints and avatar rendering.
 - **🛡️ Endpoint Rate Limiting:** Built-in security shielding via `express-rate-limit` guarding sensitive auth routes and AI compilation endpoints from brute-forcing or automated bot spams.
 - **📜 Incremental Log Pagination:** database-level pagination on `/api/history` using Mongoose offsets, backed by an incremental "Load More Logs" list scrolling system on the client.
+- **⚡ Automated Server Keep-Alive:** Includes a `/health` endpoint and pre-configured GitHub Actions `cron` workflow to prevent free-tier cloud platforms (like Render) from sleeping during inactivity.
 
 ---
 
@@ -64,6 +65,9 @@ Developed with React 19, Node.js, Express, and MongoDB, this application integra
     │   ├── routes/         # auth.routes.js, code.routes.js, history.routes.js
     │   └── middleware/     # auth.middleware.js, error.middleware.js, rateLimit.middleware.js
     └── server.js           # Server Initialization Entry point
+└── .github/
+    └── workflows/
+        └── keep-alive.yml  # GitHub Actions cron job for pinging the /health endpoint
 ```
 
 ---
