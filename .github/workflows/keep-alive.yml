@@ -2,7 +2,7 @@ name: Backend Keep-Alive
 
 on:
   schedule:
-    - cron: '*/30 * * * *'  # Runs every 3 minutes
+    - cron: '*/10 * * * *'  # Runs every 3 minutes
   workflow_dispatch:        # Allows manual trigger
 
 jobs:
