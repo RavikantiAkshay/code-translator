@@ -1,5 +1,10 @@
 import { groq, GROQ_MODEL } from "../config/groq.config.js";
 
+const stripThink = (text) => {
+  if (!text) return "";
+  return text.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+};
+
 // Note: Re-routed AI Service backend to Groq for higher rate limits and speed
 export const translateCode = async (code, sourceLang, targetLang) => {
   const response = await groq.chat.completions.create({
@@ -17,11 +22,11 @@ export const translateCode = async (code, sourceLang, targetLang) => {
     temperature: 0.1, // Lower temperature keeps translation deterministic and precise
   });
 
-  const text = response.choices[0]?.message?.content || "";
-  if (!text.trim()) {
+  const text = stripThink(response.choices[0]?.message?.content || "");
+  if (!text) {
     throw new Error("Groq returned an empty response. Please wait a second and try again.");
   }
-  return text.trim();
+  return text;
 };
 
 export const analyzeCodeComplexity = async (code, lang) => {
@@ -40,11 +45,11 @@ export const analyzeCodeComplexity = async (code, lang) => {
     temperature: 0.2,
   });
 
-  const text = response.choices[0]?.message?.content || "";
-  if (!text.trim()) {
+  const text = stripThink(response.choices[0]?.message?.content || "");
+  if (!text) {
     throw new Error("Groq returned an empty response. Please wait a second and try again.");
   }
-  return text.trim();
+  return text;
 };
 
 export const optimizeCode = async (code, lang) => {
@@ -63,11 +68,11 @@ export const optimizeCode = async (code, lang) => {
     temperature: 0.2,
   });
 
-  const text = response.choices[0]?.message?.content || "";
-  if (!text.trim()) {
+  const text = stripThink(response.choices[0]?.message?.content || "");
+  if (!text) {
     throw new Error("Groq returned an empty response. Please wait a second and try again.");
   }
-  return text.trim();
+  return text;
 };
 
 export const explainCode = async (code, lang) => {
@@ -86,9 +91,9 @@ export const explainCode = async (code, lang) => {
     temperature: 0.2,
   });
 
-  const text = response.choices[0]?.message?.content || "";
-  if (!text.trim()) {
+  const text = stripThink(response.choices[0]?.message?.content || "");
+  if (!text) {
     throw new Error("Groq returned an empty response. Please wait a second and try again.");
   }
-  return text.trim();
+  return text;
 };
