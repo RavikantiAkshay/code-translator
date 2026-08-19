@@ -12,4 +12,5 @@ export const groq = new Groq({
 });
 
 // High-capacity, robust reasoning and fast model on Groq
-export const GROQ_MODEL = "llama-3.3-70b-versatile";
+export const GROQ_MODEL = "qwen3.6-27b";
+

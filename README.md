@@ -1,6 +1,6 @@
 # 🌌 AI-Powered Smart Code Translator & Assistant
 
-An elite, full-stack MERN utility designed for developers. It leverages the high-performance **Groq Llama-3.3-70b-versatile** engine (`groq-sdk`) to translate, optimize, analyze, and explain code within a premium, high-performance monochrome workspace.
+An elite, full-stack MERN utility designed for developers. It leverages the high-performance **Groq qwen3.6-27b** engine (`groq-sdk`) to translate, optimize, analyze, and explain code within a premium, high-performance monochrome workspace.
 
 Developed with React 19, Node.js, Express, and MongoDB, this application integrates full token-based JWT security, Google OAuth Single Sign-On (SSO) with direct avatar rendering, pixel-perfect Monaco Editors, and robust historical log tracking.
 
@@ -39,7 +39,7 @@ Developed with React 19, Node.js, Express, and MongoDB, this application integra
 - **Runtime:** Node.js (ES Modules syntax)
 - **Framework:** Express.js v5
 - **Database:** MongoDB via Mongoose ODM
-- **GenAI Client:** Official Groq SDK (`groq-sdk` model `llama-3.3-70b-versatile`)
+- **GenAI Client:** Official Groq SDK (`groq-sdk` model `qwen3.6-27b`)
 - **Security:** `express-rate-limit` (quota protection), `jsonwebtoken` (JWT signatures), `bcryptjs`, `google-auth-library` (Google SSO validations)
 
 ---
