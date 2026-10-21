@@ -9,7 +9,7 @@ const historySchema = new mongoose.Schema(
     },
     action: {
       type: String,
-      enum: ["translate", "analyze", "optimize", "explain"],
+      enum: ["translate", "translate-verified", "analyze", "optimize", "explain"],
       required: true,
     },
     sourceLanguage: {

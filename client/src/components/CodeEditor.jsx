@@ -3,14 +3,15 @@ import Editor from "@monaco-editor/react";
 import { ThemeContext } from "../context/ThemeContext.jsx";
 import { MONACO_LANGUAGES } from "../constants/language.js";
 
-function CodeEditor({ code, onChange, language, readOnly = false }) {
+function CodeEditor({ code, value, onChange, language, readOnly = false }) {
   const { theme } = useContext(ThemeContext);
+  const editorValue = code !== undefined ? code : (value !== undefined ? value : "");
 
   return (
     <Editor
       height="100%"
       language={MONACO_LANGUAGES[language] || "javascript"}
-      value={code}
+      value={editorValue}
       onChange={(v) => onChange && onChange(v || "")}
       theme={theme === "dark" ? "vs-dark" : "vs"}
       options={{
@@ -38,6 +39,9 @@ function CodeEditor({ code, onChange, language, readOnly = false }) {
         folding: true,
         smoothScrolling: true,
         fixedOverflowWidgets: true,
+        scrollbar: {
+          alwaysConsumeMouseWheel: false,
+        },
       }}
       loading={
         <div className="loading-state">

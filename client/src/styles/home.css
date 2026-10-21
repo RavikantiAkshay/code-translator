@@ -2,7 +2,10 @@
 .home-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 60px); /* Adjust to 60px navbar */
+  min-height: calc(100vh - 60px);
+  height: calc(100vh - 60px);
+  overflow-y: auto;
+  overflow-x: hidden;
   background: var(--bg-primary);
   color: var(--text-primary);
   font-family: 'Inter', sans-serif;
@@ -112,6 +115,7 @@
 .workspace-grid {
   display: flex; /* Swapped to flex for resizable columns support */
   flex: 1;
+  min-height: 480px;
   overflow: hidden;
   position: relative;
   width: 100%;

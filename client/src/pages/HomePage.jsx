@@ -3,9 +3,11 @@ import toast from "react-hot-toast";
 import CodeEditor from "../components/CodeEditor.jsx";
 import OutputPanel from "../components/OutputPanel.jsx";
 import CustomSelect from "../components/CustomSelect.jsx";
+import VerificationPipeline from "../components/VerificationPipeline.jsx";
 import { LANGUAGES, STARTER_CODE } from "../constants/language.js";
 import {
-  translateCode,
+  translateAndVerifyAsync,
+  connectToJobStream,
   analyzeComplexity,
   optimizeCode,
   explainCode,
@@ -32,13 +34,31 @@ const extensionMap = {
   cs: "csharp",
 };
 
+const STORAGE_KEY = "code_translator_workspace";
+
+const loadSavedState = () => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (_) {
+    return null;
+  }
+};
+
 function HomePage() {
-  const [code, setCode] = useState(STARTER_CODE["python"] || "");
-  const [sourceLanguage, setSourceLanguage] = useState("python");
-  const [targetLanguage, setTargetLanguage] = useState("javascript");
-  const [activeAction, setActiveAction] = useState("translate");
-  const [result, setResult] = useState(null);
+  const saved = useRef(loadSavedState()).current;
+
+  const [sourceLanguage, setSourceLanguage] = useState(saved?.sourceLanguage || "python");
+  const [targetLanguage, setTargetLanguage] = useState(saved?.targetLanguage || "javascript");
+  const [code, setCode] = useState(saved?.code !== undefined ? saved.code : (STARTER_CODE["python"] || ""));
+  const [activeAction, setActiveAction] = useState(saved?.activeAction || "translate");
+  const [result, setResult] = useState(saved?.result || null);
   const [loading, setLoading] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState(saved?.verificationStatus || null);
+  const [showLogs, setShowLogs] = useState(saved?.showLogs || false);
+
+  // Cache per-action outputs so switching actions preserves previous results
+  const [actionCache, setActionCache] = useState(saved?.actionCache || {});
 
   // File Picker ref
   const fileInputRef = useRef(null);
@@ -46,11 +66,31 @@ function HomePage() {
   // Enhancement States: Split resizer, visual diff, drag & drop
   const [leftWidth, setLeftWidth] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [showDiff, setShowDiff] = useState(false);
+  const [showDiff, setShowDiff] = useState(saved?.showDiff || false);
   const [dragActive, setDragActive] = useState(false);
 
   // Track original code sent to AI for visual diff comparison
-  const [sentCode, setSentCode] = useState("");
+  const [sentCode, setSentCode] = useState(saved?.sentCode || "");
+
+  // Persist state memory to localStorage across route changes and refreshes
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          sourceLanguage,
+          targetLanguage,
+          code,
+          activeAction,
+          result,
+          verificationStatus,
+          sentCode,
+          showDiff,
+          actionCache,
+        })
+      );
+    } catch (_) {}
+  }, [sourceLanguage, targetLanguage, code, activeAction, result, verificationStatus, sentCode, showDiff, actionCache]);
 
   const handleSourceChange = (e) => {
     const lang = e.target.value;
@@ -60,18 +100,48 @@ function HomePage() {
     }
     setResult(null);
     setShowDiff(false);
+    setVerificationStatus(null);
+    setShowLogs(false);
   };
 
   const handleTargetChange = (e) => {
     setTargetLanguage(e.target.value);
     setResult(null);
     setShowDiff(false);
+    setVerificationStatus(null);
+    setShowLogs(false);
   };
 
   const handleActionChange = (actionId) => {
+    if (actionId === activeAction) return;
+
+    // 1. Cache current action's outputs before switching
+    const updatedCache = {
+      ...actionCache,
+      [activeAction]: {
+        result,
+        verificationStatus,
+        sentCode,
+        showDiff,
+      },
+    };
+    setActionCache(updatedCache);
+
+    // 2. Set new active action
     setActiveAction(actionId);
-    setResult(null);
-    setShowDiff(false);
+
+    // 3. Restore previous outputs for this action if available, or reset to null
+    const cached = updatedCache[actionId];
+    if (cached) {
+      setResult(cached.result || null);
+      setVerificationStatus(cached.verificationStatus || null);
+      setSentCode(cached.sentCode || "");
+      setShowDiff(cached.showDiff || false);
+    } else {
+      setResult(null);
+      setVerificationStatus(null);
+      setShowDiff(false);
+    }
   };
 
   const handleRun = async () => {
@@ -82,18 +152,72 @@ function HomePage() {
 
     setLoading(true);
     setResult(null);
+    setShowLogs(false);
     setSentCode(code); // Cache code version sent to AI
 
     try {
-      let response;
       if (activeAction === "translate") {
         if (sourceLanguage === targetLanguage) {
           toast.error("Source and Target languages must be different for translation.");
           setLoading(false);
           return;
         }
-        response = await translateCode(code, sourceLanguage, targetLanguage);
-      } else if (activeAction === "analyze") {
+
+        setVerificationStatus({
+          stage: "QUEUED",
+          percent: 10,
+          message: "Enqueuing translation task to async worker queue...",
+        });
+
+        const jobData = await translateAndVerifyAsync(code, sourceLanguage, targetLanguage);
+
+        connectToJobStream(jobData.jobId, {
+          onProgress: (progress) => {
+            setVerificationStatus((prev) => ({
+              ...prev,
+              stage: progress.stage,
+              percent: progress.percent,
+              message: progress.message,
+            }));
+          },
+          onCompleted: (returnvalue) => {
+            setResult(returnvalue.result);
+            setVerificationStatus({
+              stage: returnvalue.verified ? "VERIFIED" : "COMPLETED_UNVERIFIED",
+              percent: 100,
+              message: returnvalue.verified
+                ? `Verified! Passed unit assertions after ${returnvalue.iterations} self-healing iteration(s).`
+                : "Completed (sandbox assertions did not pass).",
+              verified: returnvalue.verified,
+              iterations: returnvalue.iterations,
+              testOutput: returnvalue.testOutput,
+            });
+            setLoading(false);
+            if (returnvalue.verified) {
+              toast.success(`Translation verified and passed all assertions!`);
+            } else {
+              toast.error("Translation complete, but some assertions failed.");
+            }
+          },
+          onFailed: (failedReason) => {
+            setLoading(false);
+            setVerificationStatus({
+              stage: "FAILED",
+              percent: 100,
+              message: failedReason || "Execution worker failed.",
+              testOutput: failedReason,
+            });
+            toast.error(failedReason || "Translation job failed");
+          },
+          onError: () => {
+            setLoading(false);
+          },
+        });
+        return;
+      }
+
+      let response;
+      if (activeAction === "analyze") {
         response = await analyzeComplexity(code, sourceLanguage);
       } else if (activeAction === "optimize") {
         response = await optimizeCode(code, sourceLanguage);
@@ -102,7 +226,8 @@ function HomePage() {
       }
 
       setResult(response);
-      toast.success("AI compilation successful!");
+      toast.success("AI analysis complete!");
+      setLoading(false);
     } catch (error) {
       console.error(error);
       const rawMsg = error.response?.data?.message || "";
@@ -118,7 +243,6 @@ function HomePage() {
       } else {
         toast.error(rawMsg || "Something went wrong. Please try again.");
       }
-    } finally {
       setLoading(false);
     }
   };
@@ -193,6 +317,8 @@ function HomePage() {
       }
       setResult(null);
       setShowDiff(false);
+      setVerificationStatus(null);
+      setShowLogs(false);
     } catch (err) {
       toast.error("Failed to read script file.");
     }
@@ -221,7 +347,6 @@ function HomePage() {
 
     let displayResult = result;
     if (activeAction !== "translate") {
-      // If code optimization/explanations contain codeblocks, extract the code block contents
       const codeBlockRegex = /```\w*\n([\s\S]*?)```/;
       const match = result.match(codeBlockRegex);
       if (match && match[1]) {
@@ -306,15 +431,24 @@ function HomePage() {
         </button>
       </header>
 
+      {/* Sandboxed Verification Pipeline Banner - Persistent across top during and after compilation */}
+      {activeAction === "translate" && verificationStatus && (
+        <VerificationPipeline 
+          status={verificationStatus} 
+          onClose={() => setVerificationStatus(null)} 
+        />
+      )}
+
       {/* Editor Grid Workspace */}
       <main className="workspace-grid">
-        {loading && (
+        {loading && activeAction !== "translate" && (
           <div className="loading-overlay">
             <div className="spinner" style={{ width: "40px", height: "40px", borderTopColor: "#ffffff", borderWidth: "3px" }}></div>
-            <p className="loading-text">AI is writing some magic...</p>
+            <p className="loading-text">AI is analyzing...</p>
           </div>
         )}
 
+        {/* Left Pane - Input Code */}
         <section 
           className="pane pane-left"
           style={leftWidth ? { width: `${leftWidth}px`, flexGrow: 0, flexShrink: 0 } : { flex: 1 }}
@@ -326,27 +460,24 @@ function HomePage() {
           <div className="pane-header">
             <span>Input Code</span>
             <div className="pane-header-actions">
-              {/* Clickable Local File Upload Action */}
               <button
                 onClick={() => fileInputRef.current?.click()}
                 className="header-action-btn"
-                title="Select and load local script code file"
+                title="Select a local script file to populate input"
               >
                 Upload File
               </button>
               <input
-                type="file"
                 ref={fileInputRef}
-                onChange={handleFilePickerChange}
+                type="file"
                 style={{ display: "none" }}
-                accept=".py,.js,.ts,.java,.c,.cpp,.cc,.cs,.txt"
+                onChange={handleFilePickerChange}
               />
             </div>
           </div>
-          <div className="pane-content">
+          <div className="pane-content" style={{ position: "relative" }}>
             <CodeEditor 
-              key="input-code-editor" 
-              code={code} 
+              value={code} 
               onChange={setCode} 
               language={sourceLanguage} 
             />
@@ -369,49 +500,76 @@ function HomePage() {
           onMouseDown={handleMouseDown}
         />
 
+        {/* Right Pane - AI Output */}
         <section className="pane pane-right" style={{ flex: 1 }}>
           <div className="pane-header">
-            <span>AI Output</span>
-            {result && (
-              <div className="pane-header-actions">
-                {/* Visual Diff View Switcher */}
-                <button
-                  onClick={() => setShowDiff(!showDiff)}
-                  className={`header-action-btn ${showDiff ? "active" : ""}`}
-                  title="Toggle original vs compiled side-by-side comparison"
-                >
-                  {showDiff ? "Output View" : "Diff View"}
-                </button>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span>AI Output</span>
+              {verificationStatus && result && activeAction === "translate" && (
+                <span style={{
+                  fontSize: "0.68rem",
+                  fontWeight: 700,
+                  padding: "0.15rem 0.45rem",
+                  borderRadius: "4px",
+                  background: "var(--bg-primary)",
+                  border: "1px solid var(--border-color)",
+                  color: verificationStatus.verified ? "var(--text-primary)" : "var(--text-muted)",
+                  letterSpacing: "0.03em"
+                }}>
+                  {verificationStatus.verified ? "✓ Verified" : "Unverified"}
+                  {verificationStatus.iterations > 0 && ` (${verificationStatus.iterations} repair)`}
+                </span>
+              )}
+            </div>
 
-                {/* Local Script Downloader */}
-                <button
-                  onClick={handleDownload}
-                  className="header-action-btn"
-                  title="Download result script to local file"
-                >
-                  Download
-                </button>
-
-                <button
-                  onClick={handleCopy}
-                  className="header-action-btn"
-                  title="Copy result contents to clipboard"
-                >
-                  Copy
-                </button>
-              </div>
-            )}
+            <div className="pane-header-actions">
+              {result && (
+                <>
+                  <button
+                    onClick={() => setShowDiff(!showDiff)}
+                    className={`header-action-btn ${showDiff ? "active" : ""}`}
+                    title="Toggle original vs compiled side-by-side comparison"
+                  >
+                    {showDiff ? "Output View" : "Diff View"}
+                  </button>
+                  <button
+                    onClick={handleDownload}
+                    className="header-action-btn"
+                    title="Download result script to local file"
+                  >
+                    Download
+                  </button>
+                  <button
+                    onClick={handleCopy}
+                    className="header-action-btn"
+                    title="Copy result contents to clipboard"
+                  >
+                    Copy
+                  </button>
+                </>
+              )}
+            </div>
           </div>
+
           <div className="pane-content">
-            <OutputPanel 
-              key="primary-output-panel"
-              result={result} 
-              action={activeAction} 
-              targetLanguage={targetLanguage} 
-              showDiff={showDiff}
-              originalCode={sentCode}
-              sourceLanguage={sourceLanguage}
-            />
+            {loading && activeAction === "translate" ? (
+              <div className="loading-state" style={{ display: "flex", flexDirection: "column", gap: "12px", justifyContent: "center", alignItems: "center", height: "100%" }}>
+                <div className="spinner" style={{ width: "32px", height: "32px", borderTopColor: "var(--text-primary)", borderWidth: "2px" }}></div>
+                <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem", fontWeight: "500" }}>
+                  Sandboxed worker is compiling & verifying assertions...
+                </p>
+              </div>
+            ) : (
+              <OutputPanel 
+                key="primary-output-panel"
+                result={result} 
+                action={activeAction} 
+                targetLanguage={targetLanguage} 
+                showDiff={showDiff}
+                originalCode={sentCode}
+                sourceLanguage={sourceLanguage}
+              />
+            )}
           </div>
         </section>
       </main>

@@ -1,6 +1,9 @@
 import { Router } from "express";
 import {
   handleTranslation,
+  handleAsyncTranslation,
+  handleJobStatus,
+  handleJobSSEEvents,
   handleComplexityAnalysis,
   handleOptimization,
   handleExplanation,
@@ -11,9 +14,16 @@ import { codeRateLimiter } from "../middleware/rateLimit.middleware.js";
 const router = Router();
 
 router.use(authenticate);
-router.use(codeRateLimiter); // Protect code AI endpoints from bulk abuse
+
+// SSE stream should bypass standard JSON rate limiting to stay connected
+router.get("/jobs/:jobId/events", handleJobSSEEvents);
+router.get("/jobs/:jobId", handleJobStatus);
+
+// Rate-limited AI execution endpoints
+router.use(codeRateLimiter);
 
 router.post("/translate", handleTranslation);
+router.post("/translate-verify", handleAsyncTranslation);
 router.post("/complexity", handleComplexityAnalysis);
 router.post("/optimize", handleOptimization);
 router.post("/explain", handleExplanation);

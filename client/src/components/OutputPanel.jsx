@@ -49,6 +49,9 @@ function OutputPanel({
             fontSize: 14,
             automaticLayout: true,
             originalEditable: false,
+            scrollbar: {
+              alwaysConsumeMouseWheel: false,
+            },
           }}
           loading={
             <div className="loading-state">
