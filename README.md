@@ -58,56 +58,58 @@ The application is structured into decoupled, stateless service tiers to guarant
 
 ```mermaid
 graph TD
-    subgraph Client [Client Application]
-        UI[Monaco Workspace UI]
-        SSE_Client[EventSource SSE Consumer]
-        Storage[LocalStorage Workspace Memory]
+    subgraph Client ["Client Application"]
+        UI["Monaco Workspace UI"]
+        SSE_Client["EventSource SSE Consumer"]
+        Storage["LocalStorage Workspace Memory"]
     end
 
-    subgraph Gateway [API Gateway - Express 5]
-        Auth[JWT / OAuth Middleware]
-        Limiter[Rate Limiter]
-        Controller[Code Controller]
+    subgraph Gateway ["API Gateway - Express 5"]
+        Auth["JWT / OAuth Middleware"]
+        Limiter["Rate Limiter"]
+        Controller["Code Controller"]
     end
 
-    subgraph JobQueue [Asynchronous Queue Tier]
-        Queue[BullMQ / Memory Queue]
-        Events[Queue EventEmitter]
+    subgraph JobQueue ["Asynchronous Queue Tier"]
+        Queue["BullMQ / Memory Queue"]
+        Events["Queue EventEmitter"]
     end
 
-    subgraph WorkerTier [Worker Process]
-        Worker[Background Worker]
-        VerifService[Verification Service]
-        LLM[Groq Qwen 3.8 27B]
+    subgraph WorkerTier ["Worker Process"]
+        Worker["Background Worker"]
+        VerifService["Verification Service"]
+        LLM["Groq Qwen 3.8 27B"]
     end
 
-    subgraph SandboxTier [Isolated OS Environment]
-        Sandbox[Process-Isolated Sandbox]
-        Compiler[GCC / G++ / Javac / Node / Python]
+    subgraph SandboxTier ["Isolated OS Environment"]
+        Sandbox["Process-Isolated Sandbox"]
+        Compiler["GCC / G++ / Javac / Node / Python"]
     end
 
-    subgraph StorageTier [Database]
-        MongoDB[(MongoDB Atlas)]
+    subgraph StorageTier ["Database"]
+        MongoDB[("MongoDB Atlas")]
     end
 
-    UI -->|POST /api/code/translate-verify| Gateway
-    Gateway --> Auth --> Limiter --> Controller
-    Controller -->|Enqueue Job| Queue
-    Controller -->|202 Accepted + Stream URL| UI
-    UI -->|Connect SSE: /api/code/jobs/:id/events| Controller
-    Controller -.->|Listen to Progress| Events
+    UI -->|"POST /api/code/translate-verify"| Gateway
+    Gateway --> Auth
+    Auth --> Limiter
+    Limiter --> Controller
+    Controller -->|"Enqueue Job"| Queue
+    Controller -->|"202 Accepted + Stream URL"| UI
+    UI -->|"Connect SSE"| Controller
+    Controller -.->|"Listen to Progress"| Events
 
-    Queue -->|Consume Task| Worker
-    Worker -->|Initial Translation| LLM
-    Worker -->|Run Verification Loop| VerifService
-    VerifService -->|1. Generate Test Harness| LLM
-    VerifService -->|2. Execute Code| Sandbox
+    Queue -->|"Consume Task"| Worker
+    Worker -->|"Initial Translation"| LLM
+    Worker -->|"Run Verification Loop"| VerifService
+    VerifService -->|"1. Generate Test Harness"| LLM
+    VerifService -->|"2. Execute Code"| Sandbox
     Sandbox --> Compiler
-    Sandbox -->|Exit Code, stdout, stderr| VerifService
-    VerifService -->|3. Feed Error for Repair (Iterative)| LLM
-    Worker -->|Update Progress Events| Events
-    Events -.->|Stream State, Progress, Completed| SSE_Client
-    Worker -->|Persist Audit Record| MongoDB
+    Sandbox -->|"Exit Code, stdout, stderr"| VerifService
+    VerifService -->|"3. Feed Error for Repair"| LLM
+    Worker -->|"Update Progress Events"| Events
+    Events -.->|"Stream Progress & Completed"| SSE_Client
+    Worker -->|"Persist Audit Record"| MongoDB
 ```
 
 ---
@@ -143,45 +145,45 @@ sequenceDiagram
     participant Sandbox as Execution Sandbox
     participant DB as MongoDB Atlas
 
-    User->>UI: Select Languages & Click Run Action
-    UI->>API: POST /api/code/translate-verify { code, sourceLang, targetLang }
-    API->>Queue: Enqueue Job (userId, code, langs)
-    API-->>UI: HTTP 202 Accepted { jobId, streamUrl }
-    UI->>API: GET /api/code/jobs/:jobId/events (SSE Connection)
+    User->>UI: Select Languages and Click Run Action
+    UI->>API: POST /api/code/translate-verify
+    API->>Queue: Enqueue Job
+    API-->>UI: HTTP 202 Accepted with jobId
+    UI->>API: GET /api/code/jobs/:jobId/events (SSE)
 
     Queue->>Worker: Consume translation job
-    Worker->>API: emit("progress", { stage: "TRANSLATING", percent: 20 })
-    API-->>UI: SSE: progress (Stage: Translate)
+    Worker->>API: Emit Translating Progress (20%)
+    API-->>UI: SSE Progress: Translating
 
-    Worker->>LLM: Translate code (sourceLang -> targetLang)
+    Worker->>LLM: Translate code
     LLM-->>Worker: Initial translated code
 
     loop Self-Healing Loop (Up to 3 Iterations)
-        Worker->>API: emit("progress", { stage: "GENERATING_TESTS", percent: 45 })
-        API-->>UI: SSE: progress (Stage: Test Harness)
-        Worker->>LLM: Generate runnable test harness with unit assertions
+        Worker->>API: Emit Test Harness Progress (45%)
+        API-->>UI: SSE Progress: Test Harness
+        Worker->>LLM: Synthesize executable test harness with unit assertions
         LLM-->>Worker: Executable test harness code
 
-        Worker->>API: emit("progress", { stage: "SANDBOX_COMPILING", percent: 60 })
-        API-->>UI: SSE: progress (Stage: Sandbox Run)
-        Worker->>Sandbox: Execute harness in isolated subprocess (8s timeout, 128MB RAM)
-        Sandbox-->>Worker: Result { exitCode, stdout, stderr, durationMs }
+        Worker->>API: Emit Sandbox Compiling Progress (60%)
+        API-->>UI: SSE Progress: Sandbox Run
+        Worker->>Sandbox: Execute harness in isolated subprocess
+        Sandbox-->>Worker: Execution result (exitCode, stdout, stderr)
 
-        alt exitCode == 0 (Assertions Pass)
+        alt Assertions Pass (Exit Code 0)
             Note over Worker: Verification Successful
-        else exitCode != 0 (Compile/Test Error)
+        else Compile or Assertion Failure (Exit Code Non-Zero)
             Note over Worker: Trigger Compiler Repair
-            Worker->>API: emit("progress", { stage: "SELF_HEALING", percent: 75 })
-            API-->>UI: SSE: progress (Stage: Self-Healing)
-            Worker->>LLM: Repair code: Prompt(originalCode, currentCode, stderr)
+            Worker->>API: Emit Self-Healing Progress (75%)
+            API-->>UI: SSE Progress: Self-Healing
+            Worker->>LLM: Repair code with compiler stderr diagnostics
             LLM-->>Worker: Repaired code
         end
     end
 
-    Worker->>DB: Save Translation History (userId, action: "translate", finalCode)
-    Worker->>API: emit("completed", { returnvalue: { verified, result, testOutput, iterations } })
-    API-->>UI: SSE: completed event
-    UI->>User: Display Verified Code in Monaco Editor + Pipeline Banner
+    Worker->>DB: Save Translation History
+    Worker->>API: Emit Completed Event
+    API-->>UI: SSE Completed: Verified Code and Test Logs
+    UI->>User: Display Verified Code in Monaco Editor
 ```
 
 ### Test Harness Synthesis
